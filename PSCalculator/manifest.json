@@ -1,0 +1,74 @@
+{
+"update_url": "https://clients2.google.com/service/update2/crx",
+
+  "manifest_version": 3,
+  "name": "PowerSchool GPA Calculator",
+  "short_name": "GPA Calculator",
+  "version": "1.1.1",
+  "author": "Graham Zemel",
+  "description": "Automatic GPA Calculator for PowerSchool, still in development as of 04/17/23!",
+  "icons": {
+    "128": "image.png"
+  },
+  "action": {
+    "default_title": "Get PowerSchool Grades & GPA",
+    "default_popup": "options.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*/*"
+      ],
+      "include_globs": [
+        "*powerschool.*",
+        "*ps.*",
+        "*scores.html*",
+        "portal",
+        "k12"
+      ],
+      "exclude_globs": [
+        "*home*",
+        "*attendance*",
+        "*requestform*",
+        "*schoolinformation*",
+        "*termgrades*"
+      ],
+      "js": [
+        "jquery-2.2.2.min.js"]
+    },
+    {
+      "matches": [
+        "https://*/*"
+      ],
+      "include_globs": [
+        "*powerschool.*",
+        "*ps.*",
+        "*home.html*",
+        "portal",
+        "k12"
+      ],
+      "exclude_globs": [
+        "*scores*",
+        "*attendance*",
+        "*requestform*",
+        "*schoolinformation*",
+        "*termgrades*"
+      ],
+      "js": [
+        "jquery-2.2.2.min.js",
+        "GPACalc.js"
+      ]
+    }
+  ],
+  "web_accessible_resources": [{
+    "resources": ["jquery-2.2.2.min.js",
+    "GPACalc.js"],
+    "matches": ["https://*/*"],
+    "extension_ids": ["*"]
+
+}],
+  "options_page": "options.html",
+  "options_ui": {
+    "page": "options.html"
+  }
+}
