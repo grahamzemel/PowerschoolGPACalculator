@@ -127,31 +127,32 @@ $(document).ready(function () {
     var nullGPAS = 0;
     for (var i = 0; i < gradeArray.length; i++) {
       var gpa = gradeArray[i];
+      
       if (gpa == undefined) {
         break;
       }
       if (gpa.includes("A+") || gpa >= 96.5) {
-        gpa = 4.3;
+        gpa = 4.33;
       } else if (gpa.includes("A-") || gpa >= 89.5) {
-        gpa = 3.7;
+        gpa = 3.66;
       } else if (gpa.includes("A") || gpa >= 92.5) {
         gpa = 4.0;
       } else if (gpa.includes("B+") || gpa >= 86.5) {
-        gpa = 3.3;
+        gpa = 3.33;
       } else if (gpa.includes("B-") || gpa >= 79.5) {
-        gpa = 2.7;
+        gpa = 2.66;
       } else if (gpa.includes("B") || gpa >= 82.5) {
         gpa = 3.0;
       } else if (gpa.includes("C+") || gpa >= 76.5) {
-        gpa = 2.3;
+        gpa = 2.33;
       } else if (gpa.includes("C-") || gpa >= 69.5) {
-        gpa = 1.7;
+        gpa = 1.66;
       } else if (gpa.includes("C") || gpa >= 73.5) {
         gpa = 2.0;
       } else if (gpa.includes("D+") || gpa >= 66.5) {
-        gpa = 1.3;
+        gpa = 1.33;
       } else if (gpa.includes("D-") || gpa >= 59.5) {
-        gpa = 0.7;
+        gpa = 0.66;
       } else if (gpa.includes("D") || gpa >= 63.5) {
         gpa = 1.0;
       } else if (gpa.includes("F") || (gpa <= 59.5 && gpa >= 1)) {
@@ -163,10 +164,14 @@ $(document).ready(function () {
       total += gpa;
     }
     if (level == "H" || level == "AP") {
-      total += honors * 0.5;
-      total += ap * 1.0;
+      var addHonors = honors * 0.33;
+      var addAP = ap * .66;
+      // console.log("Honors:" + addHonors +" AP: "+ addAP)
+      total += addHonors + addAP; 
+      // console.log(total)
     }
     total /= gradeArray.length - nullGPAS;
+    if(total > 5) total = 5;
     return total.toFixed(2);
   }
 
@@ -230,6 +235,7 @@ $(document).ready(function () {
     }
   }
   var avg = sum;
+  if(avg > 5) avg = 5;
   avg = avg.toFixed(2);
 
   $("tr:eq('1')").after(
@@ -320,6 +326,7 @@ $(document).ready(function () {
           }
         }
         var avg = sum;
+        if(avg > 5) avg = 5;
         avg = avg.toFixed(2);
         $("#averageuw").text("Weighted GPA: " + avg);
       } else {
@@ -381,6 +388,7 @@ $(document).ready(function () {
           }
         }
         var avg = sum;
+        if(avg > 5) avg = 5;
         avg = avg.toFixed(2);
         $("#averageuw").text("Weighted GPA: " + avg);
       }
@@ -448,6 +456,7 @@ $(document).ready(function () {
           }
         }
         var avg = sum;
+        if(avg > 5) avg = 5;
         avg = avg.toFixed(2);
         $("#averageuw").text("Weighted GPA: " + avg);
       } else {
@@ -509,6 +518,7 @@ $(document).ready(function () {
           }
         }
         var avg = sum;
+        if(avg > 5) avg = 5;
         avg = avg.toFixed(2);
         $("#averageuw").text("Weighted GPA: " + avg);
       }
