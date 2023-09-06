@@ -1,5 +1,4 @@
 if (window.location.href.includes("home.html")) {
-  
   $(document).ready(function () {
     var grades1 = [];
     var grades2 = [];
@@ -126,9 +125,16 @@ if (window.location.href.includes("home.html")) {
 
       var total = 0;
       var nullGPAS = 0;
+      for (var k = 0; k < gradeArray.length; k++){
+        if (gradeArray[k] == "[ i ]" || gradeArray[k] == " Not available"){
+          gradeArray.splice(k, 1);
+          k--;
+          console.log(gradeArray);
+        }
+      }
       for (var i = 0; i < gradeArray.length; i++) {
         var gpa = gradeArray[i];
-
+        console.log(gpa);
         if (gpa == undefined) {
           break;
         }
@@ -164,12 +170,11 @@ if (window.location.href.includes("home.html")) {
         }
         total += gpa;
       }
-      if (level == "H" || level == "AP") {
+      if ((level == "H" || level == "AP") && total != 0) {
         var addHonors = honors * 0.33;
+        console.log(addHonors);
         var addAP = ap * 0.66;
-        // console.log("Honors:" + addHonors +" AP: "+ addAP)
         total += addHonors + addAP;
-        // console.log(total)
       }
       total /= gradeArray.length - nullGPAS;
       if (total > 5) total = 5;
@@ -198,6 +203,7 @@ if (window.location.href.includes("home.html")) {
         calcGradeU[i] == ""
       ) {
         calcGradeU.splice(i, 1);
+        i--;
       }
     }
 
@@ -251,10 +257,13 @@ if (window.location.href.includes("home.html")) {
       "<tr><th id='averagew' class='right' colspan='12'>Sort classes by AP / Honors / Regular: " +
         "<input class='sort' type='checkbox' id='sort'> </th></tr>"
     );
-    var checkboxState = document.cookie.replace(/(?:(?:^|.*;\s*)checkboxState\s*\=\s*([^;]*).*$)|^.*$/, "$1");
-    $('.sort').prop('checked', checkboxState === "true");
+    var checkboxState = document.cookie.replace(
+      /(?:(?:^|.*;\s*)checkboxState\s*\=\s*([^;]*).*$)|^.*$/,
+      "$1"
+    );
+    $(".sort").prop("checked", checkboxState === "true");
 
-    // Call the function manually after setting checkbox based on cookie 
+    // Call the function manually after setting checkbox based on cookie
     var classCount = 0;
     rows.each(function () {
       $(this)
@@ -263,7 +272,7 @@ if (window.location.href.includes("home.html")) {
           classCount++;
         });
     });
-    if ($('.sort').is(":checked")) {
+    if ($(".sort").is(":checked")) {
       var sortedRows = [];
       for (var i = 4; i <= classCount + 3; i++) {
         var row = $("tr:eq(" + (i + 1) + ")");
@@ -271,9 +280,9 @@ if (window.location.href.includes("home.html")) {
         if (name.includes("AP ")) {
           sortedRows.push({ row: row, order: 0 });
         } else if (name.includes("HONORS")) {
-            sortedRows.push({row: row, order: 1 });
+          sortedRows.push({ row: row, order: 1 });
         } else {
-            sortedRows.push({ row: row, order: 2 });
+          sortedRows.push({ row: row, order: 2 });
         }
       }
       sortedRows.sort((a, b) => a.order - b.order);
@@ -281,8 +290,7 @@ if (window.location.href.includes("home.html")) {
       for (var i = 0; i < sortedRows.length; i++) {
         $("tr:eq(" + (i + 5) + ")").after(sortedRows[i].row);
       }
-    } 
-    else {
+    } else {
       var sortedRows = [];
       for (var i = 4; i <= classCount + 3; i++) {
         var row = $("tr:eq(" + (i + 1) + ")");
@@ -295,11 +303,8 @@ if (window.location.href.includes("home.html")) {
         $("tr:eq(" + (i + 5) + ")").after(sortedRows[i].row);
       }
     }
-  
 
-
-
-    $(".sort").change(function() {
+    $(".sort").change(function () {
       var classCount = 0;
       rows.each(function () {
         $(this)
@@ -308,28 +313,28 @@ if (window.location.href.includes("home.html")) {
             classCount++;
           });
       });
-      if (this.checked){
-          document.cookie = "checkboxState=true; path=/";
-          var sortedRows = [];
-          for (var i = 4; i <= classCount + 3; i++) {
-            var row = $("tr:eq(" + (i + 1) + ")");
-            var name = row.find("td:eq(11)").text();
-            if (name.includes("AP ")) {
-              sortedRows.push({ row: row, order: 0 });
-            } else if (name.includes("HONORS")) {
-                sortedRows.push({row: row, order: 1 });
-            } else {
-                sortedRows.push({ row: row, order: 2 });
-            }
+      if (this.checked) {
+        document.cookie = "checkboxState=true; path=/";
+        var sortedRows = [];
+        for (var i = 4; i <= classCount + 3; i++) {
+          var row = $("tr:eq(" + (i + 1) + ")");
+          var name = row.find("td:eq(11)").text();
+          if (name.includes("AP ")) {
+            sortedRows.push({ row: row, order: 0 });
+          } else if (name.includes("HONORS")) {
+            sortedRows.push({ row: row, order: 1 });
+          } else {
+            sortedRows.push({ row: row, order: 2 });
           }
-          sortedRows.sort((a, b) => a.order - b.order);
-          // replace all rows after row 5 with sorted rows
-          for (var i = 0; i < sortedRows.length; i++) {
-            $("tr:eq(" + (i + 5) + ")").after(sortedRows[i].row);
-          }
+        }
+        sortedRows.sort((a, b) => a.order - b.order);
+        // replace all rows after row 5 with sorted rows
+        for (var i = 0; i < sortedRows.length; i++) {
+          $("tr:eq(" + (i + 5) + ")").after(sortedRows[i].row);
+        }
       } else {
-          document.cookie = "checkboxState=false; path=/";
-          var sortedRows = [];
+        document.cookie = "checkboxState=false; path=/";
+        var sortedRows = [];
         for (var i = 4; i <= classCount + 3; i++) {
           var row = $("tr:eq(" + (i + 1) + ")");
           var period = row.find("td:eq(0)").text();
@@ -342,7 +347,7 @@ if (window.location.href.includes("home.html")) {
         }
       }
     });
-    
+
     rows.each(function (c) {
       $(this)
         .find("td:eq('11')")
@@ -362,7 +367,6 @@ if (window.location.href.includes("home.html")) {
       calcGradeW = [""];
       var idNum = $(this).attr("id").slice(-1);
       if ($(this).is(":checked")) {
-
         $("#A" + idNum).attr("disabled", true);
         honors += 1;
         for (var i = 1; i <= quarters; i++) {
@@ -384,6 +388,7 @@ if (window.location.href.includes("home.html")) {
             calcGradeW[i] == ""
           ) {
             calcGradeW.splice(i, 1);
+            i--;
           }
         }
         var sum = 0;
@@ -440,11 +445,11 @@ if (window.location.href.includes("home.html")) {
             calcGradeW[i] == ""
           ) {
             calcGradeW.splice(i, 1);
+            i--;
           }
         }
         var sum = 0;
         var glenW = calcGradeW.length;
-
         switch (glenW) {
           case 6:
             qweight = [0.2, 0.2, 0.1, 0.2, 0.2, 0.1];
@@ -502,6 +507,7 @@ if (window.location.href.includes("home.html")) {
             calcGradeW[i] == ""
           ) {
             calcGradeW.splice(i, 1);
+            i--;
           }
         }
         var sum = 0;
@@ -558,6 +564,7 @@ if (window.location.href.includes("home.html")) {
             calcGradeW[i] == ""
           ) {
             calcGradeW.splice(i, 1);
+            i--;
           }
         }
         var sum = 0;
@@ -596,6 +603,4 @@ if (window.location.href.includes("home.html")) {
       // }
     });
   });
-
 }
-
