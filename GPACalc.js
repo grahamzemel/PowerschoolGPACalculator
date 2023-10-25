@@ -125,8 +125,8 @@ if (window.location.href.includes("home.html")) {
 
       var total = 0;
       var nullGPAS = 0;
-      for (var k = 0; k < gradeArray.length; k++){
-        if (gradeArray[k] == "[ i ]" || gradeArray[k] == " Not available"){
+      for (var k = 0; k < gradeArray.length; k++) {
+        if (gradeArray[k] == "[ i ]" || gradeArray[k] == " Not available") {
           gradeArray.splice(k, 1);
           k--;
           console.log(gradeArray);
@@ -272,80 +272,105 @@ if (window.location.href.includes("home.html")) {
           classCount++;
         });
     });
-    if ($(".sort").is(":checked")) {
-      var sortedRows = [];
-      for (var i = 4; i <= classCount + 3; i++) {
-        var row = $("tr:eq(" + (i + 1) + ")");
-        var name = row.find("td:eq(11)").text();
-        if (name.includes("AP ")) {
-          sortedRows.push({ row: row, order: 0 });
-        } else if (name.includes("HONORS")) {
-          sortedRows.push({ row: row, order: 1 });
-        } else {
-          sortedRows.push({ row: row, order: 2 });
+
+    // SORT CLASSES BY AP / HONORS / REGULAR
+    // Checks if the checkbox is checked on page load
+    function getRowOrder(row, isSortChecked) {
+      if (isSortChecked) {
+        const name = row.find("td:eq(11)").text();
+        const hasGrey = row.find("td.notInSession").length > 0;
+        let hasGrades = false;
+
+        if (hasGrey) {
+          row.find("td:not(.notInSession)").each(function () {
+            var cellValue = $(this).text().trim();
+            // if it's not the first cell (period), and it's not the name
+            if (
+              !(
+                cellValue.includes(row.find("td:eq(0)").text().trim()) ||
+                cellValue.includes(row.find("td:eq(11)").text().trim())
+              )
+            ) {
+              if (
+                cellValue.includes("A") ||
+                cellValue.includes("B") ||
+                cellValue.includes("C") ||
+                cellValue.includes("D") ||
+                cellValue.includes("E") ||
+                cellValue.includes("F")
+              ) {
+                hasGrades = true;
+                return false; // exit .each() loop
+              }
+            }
+          });
         }
-      }
-      sortedRows.sort((a, b) => a.order - b.order);
-      // replace all rows after row 5 with sorted rows
-      for (var i = 0; i < sortedRows.length; i++) {
-        $("tr:eq(" + (i + 5) + ")").after(sortedRows[i].row);
-      }
-    } else {
-      var sortedRows = [];
-      for (var i = 4; i <= classCount + 3; i++) {
-        var row = $("tr:eq(" + (i + 1) + ")");
-        var period = row.find("td:eq(0)").text();
-        var periodNum = period.charAt(1);
-        sortedRows.push({ row: row, order: periodNum });
-      }
-      sortedRows.sort((a, b) => a.order - b.order);
-      for (var i = 0; i < sortedRows.length; i++) {
-        $("tr:eq(" + (i + 5) + ")").after(sortedRows[i].row);
+
+        if (name.includes("AP ")) return 0;
+        if (name.includes("HONORS")) return 1;
+        if (!hasGrey && hasGrades) return 2;
+        if (hasGrey && hasGrades) return 3;
+        if (hasGrey) return 4;
+
+        return 5;
+      } else {
+        return row.find("td:eq(0)").text().charAt(1);
       }
     }
 
-    $(".sort").change(function () {
-      var classCount = 0;
-      rows.each(function () {
-        $(this)
-          .find("td:eq('11')")
-          .each(function () {
-            classCount++;
-          });
-      });
-      if (this.checked) {
-        document.cookie = "checkboxState=true; path=/";
-        var sortedRows = [];
-        for (var i = 4; i <= classCount + 3; i++) {
-          var row = $("tr:eq(" + (i + 1) + ")");
-          var name = row.find("td:eq(11)").text();
-          if (name.includes("AP ")) {
-            sortedRows.push({ row: row, order: 0 });
-          } else if (name.includes("HONORS")) {
-            sortedRows.push({ row: row, order: 1 });
-          } else {
-            sortedRows.push({ row: row, order: 2 });
-          }
-        }
-        sortedRows.sort((a, b) => a.order - b.order);
-        // replace all rows after row 5 with sorted rows
-        for (var i = 0; i < sortedRows.length; i++) {
-          $("tr:eq(" + (i + 5) + ")").after(sortedRows[i].row);
-        }
-      } else {
-        document.cookie = "checkboxState=false; path=/";
-        var sortedRows = [];
-        for (var i = 4; i <= classCount + 3; i++) {
-          var row = $("tr:eq(" + (i + 1) + ")");
-          var period = row.find("td:eq(0)").text();
-          var periodNum = period.charAt(1);
-          sortedRows.push({ row: row, order: periodNum });
-        }
-        sortedRows.sort((a, b) => a.order - b.order);
-        for (var i = 0; i < sortedRows.length; i++) {
-          $("tr:eq(" + (i + 5) + ")").after(sortedRows[i].row);
-        }
+    if ($(".sort").is(":checked") || true) {
+      const sortedRows = [];
+      const isSortChecked = $(".sort").is(":checked");
+
+      for (let i = 4; i <= classCount + 3; i++) {
+        const row = $("tr:eq(" + (i + 1) + ")");
+        const order = getRowOrder(row, isSortChecked);
+        sortedRows.push({ row, order });
       }
+
+      sortedRows.sort((a, b) => a.order - b.order);
+
+      // Clear and append rows
+      $("tr")
+        .slice(5, classCount + 4)
+        .remove();
+      sortedRows.forEach((sortedRow, i) => {
+        $("tr:eq(" + (i + 4) + ")").after(sortedRow.row);
+      });
+    }
+
+    function getCookie(name) {
+      var value = "; " + document.cookie;
+      var parts = value.split("; " + name + "=");
+      if (parts.length == 2) return parts.pop().split(";").shift();
+    }
+    // On page load, set checkbox according to cookie
+    var checkboxState = getCookie("checkboxState");
+    if (checkboxState === "true") {
+      $(".sort").prop("checked", true);
+    } else {
+      $(".sort").prop("checked", false);
+    }
+    $(".sort").change(function () {
+      document.cookie = "checkboxState=" + this.checked + "; path=/";
+      const isSortChecked = this.checked;
+      const sortedRows = [];
+
+      for (let i = 4; i <= classCount + 3; i++) {
+        const row = $("tr:eq(" + (i + 1) + ")");
+        const order = getRowOrder(row, isSortChecked);
+        sortedRows.push({ row, order });
+      }
+
+      sortedRows.sort((a, b) => a.order - b.order);
+
+      // Clear and append rows
+      $("tr")
+        .slice(5, classCount + 4)
+        .remove();
+      sortedRows.forEach((sortedRow, i) => {
+        $("tr:eq(" + (i + 4) + ")").after(sortedRow.row);
+      });
     });
 
     rows.each(function (c) {
@@ -363,6 +388,7 @@ if (window.location.href.includes("home.html")) {
         });
     });
 
+    // HONORS WEIGHTING
     $(".weighHonors").change(function () {
       calcGradeW = [""];
       var idNum = $(this).attr("id").slice(-1);
@@ -482,6 +508,7 @@ if (window.location.href.includes("home.html")) {
       }
     });
 
+    // AP WEIGHTING
     $(".weighAP").change(function () {
       calcGradeW = [""];
       var idNum = $(this).attr("id").slice(-1);
