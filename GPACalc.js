@@ -319,30 +319,28 @@ if (window.location.href.includes("home.html")) {
         const hasGrey = row.find("td.notInSession").length > 0;
         let hasGrades = false;
 
-        if (hasGrey) {
-          row.find("td:not(.notInSession)").each(function () {
-            var cellValue = $(this).text().trim();
-            // if it's not the first cell (period), and it's not the name
+        row.find("td:not(.notInSession)").each(function () {
+          var cellValue = $(this).text().trim();
+          // if it's not the first cell (period), and it's not the name
+          if (
+            !(
+              cellValue.includes(row.find("td:eq(0)").text().trim()) ||
+              cellValue.includes(row.find("td:eq(11)").text().trim())
+            )
+          ) {
             if (
-              !(
-                cellValue.includes(row.find("td:eq(0)").text().trim()) ||
-                cellValue.includes(row.find("td:eq(11)").text().trim())
-              )
+              cellValue.includes("A") ||
+              cellValue.includes("B") ||
+              cellValue.includes("C") ||
+              cellValue.includes("D") ||
+              cellValue.includes("E") ||
+              cellValue.includes("F")
             ) {
-              if (
-                cellValue.includes("A") ||
-                cellValue.includes("B") ||
-                cellValue.includes("C") ||
-                cellValue.includes("D") ||
-                cellValue.includes("E") ||
-                cellValue.includes("F")
-              ) {
-                hasGrades = true;
-                return false; // exit .each() loop
-              }
+              hasGrades = true;
+              return false; // exit .each() loop
             }
-          });
-        }
+          }
+        });
 
         if (name.includes("AP ")) return 0;
         if (name.includes("HONORS")) return 1;
