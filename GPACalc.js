@@ -1,20 +1,17 @@
 if (window.location.href.includes("home.html")) {
   $(document).ready(function () {
-    var grades1 = [];
-    var grades2 = [];
-    var grades3 = [];
-    var grades4 = [];
-    var grades5 = [];
-    var grades6 = [];
-    var grades7 = [];
-    var grades8 = [];
-    var grades9 = [];
+    var grades1 = [],
+      grades2 = [],
+      grades3 = [],
+      grades4 = [],
+      grades5 = [],
+      grades6 = [],
+      grades7 = [],
+      grades8 = [],
+      grades9 = [];
     var quarters = 0;
-    var honors = 0;
-    var ap = 0;
 
     var rows = $("#quickLookup").find("tr[id^='ccid']");
-
     var calcGradeW = [""];
     var calcGradeU = [""];
 
@@ -35,60 +32,52 @@ if (window.location.href.includes("home.html")) {
       "F1",
     ];
 
-    for (var i = 0; i < periodTypes.length; i++) {
-      if (periodRow.indexOf(periodTypes[i]) > -1) {
-        quarters++;
-      }
-    }
+    quarters = periodTypes.reduce(
+      (count, type) => (periodRow.indexOf(type) > -1 ? count + 1 : count),
+      0
+    );
 
-    // start of grade table
-    table_location = 12;
+    var gradeArrays = [
+      grades1,
+      grades2,
+      grades3,
+      grades4,
+      grades5,
+      grades6,
+      grades7,
+      grades8,
+      grades9,
+    ];
+    var table_location = 12;
+
     for (var i = 0; i < quarters; i++) {
+      let currentArray = gradeArrays[i];
       rows.each(function () {
-        $(this)
-          .find("td:eq('" + table_location + "')")
-          .each(
-            // for each class
-            function () {
-              switch (table_location) {
-                case 12:
-                  grades1.push($(this).text());
-                  break;
-                case 13:
-                  grades2.push($(this).text());
-                  break;
-                case 14:
-                  grades3.push($(this).text());
-                  break;
-                case 15:
-                  grades4.push($(this).text());
-                  break;
-                case 16:
-                  grades5.push($(this).text());
-                  break;
-                case 17:
-                  grades6.push($(this).text());
-                  break;
-                case 18:
-                  grades7.push($(this).text());
-                  break;
-                case 19:
-                  grades8.push($(this).text());
-                  break;
-                case 20:
-                  grades9.push($(this).text());
-                  break;
-              }
-            }
-          );
+        var text = $(this).find(`td:eq('${table_location}')`).text();
+        currentArray.push(text);
       });
       table_location++;
     }
 
     honors = 0;
     ap = 0;
+
     function getGpa(gradeArray, level) {
-      // make below into a switch case
+      const gradeMapping = [
+        [96.5, "A+", 4.33],
+        [92.5, "A", 4.0],
+        [89.5, "A-", 3.66],
+        [86.5, "B+", 3.33],
+        [82.5, "B", 3.0],
+        [79.5, "B-", 2.66],
+        [76.5, "C+", 2.33],
+        [73.5, "C", 2.0],
+        [69.5, "C-", 1.66],
+        [66.5, "D+", 1.33],
+        [63.5, "D", 1.0],
+        [59.5, "D-", 0.66],
+      ];
+
       switch (gradeArray) {
         case 1:
           gradeArray = grades1;
@@ -117,67 +106,46 @@ if (window.location.href.includes("home.html")) {
         case 9:
           gradeArray = grades9;
           break;
-      }
-
-      if (gradeArray[gradeArray.length - 1] < 0) {
-        return 0;
-      }
-
-      var total = 0;
-      var nullGPAS = 0;
-      for (var k = 0; k < gradeArray.length; k++) {
-        if (gradeArray[k] == "[ i ]" || gradeArray[k] == " Not available") {
-          gradeArray.splice(k, 1);
-          k--;
-          console.log(gradeArray);
+        default:
+          console.log("Invalid value of gradeArray!");
         }
-      }
-      for (var i = 0; i < gradeArray.length; i++) {
-        var gpa = gradeArray[i];
-        console.log(gpa);
-        if (gpa == undefined) {
-          break;
+
+      if (gradeArray[gradeArray.length - 1] < 0) return 0;
+
+      var total = 0,
+        nullGPAS = 0;
+
+      gradeArray = gradeArray.filter(
+        (g) => g !== "[ i ]" && g !== " Not available"
+      );
+
+      for (var gpa of gradeArray) {
+        if (gpa === undefined) break;
+        var gradeValue = 0;
+        for (const [thresh, gradeStr, value] of gradeMapping) {
+          if (gpa >= thresh || gpa.includes(gradeStr)) {
+            gradeValue = value;
+            break;
+          }
         }
-        if (gpa.includes("A+") || gpa >= 96.5) {
-          gpa = 4.33;
-        } else if (gpa.includes("A-") || gpa >= 89.5) {
-          gpa = 3.66;
-        } else if (gpa.includes("A") || gpa >= 92.5) {
-          gpa = 4.0;
-        } else if (gpa.includes("B+") || gpa >= 86.5) {
-          gpa = 3.33;
-        } else if (gpa.includes("B-") || gpa >= 79.5) {
-          gpa = 2.66;
-        } else if (gpa.includes("B") || gpa >= 82.5) {
-          gpa = 3.0;
-        } else if (gpa.includes("C+") || gpa >= 76.5) {
-          gpa = 2.33;
-        } else if (gpa.includes("C-") || gpa >= 69.5) {
-          gpa = 1.66;
-        } else if (gpa.includes("C") || gpa >= 73.5) {
-          gpa = 2.0;
-        } else if (gpa.includes("D+") || gpa >= 66.5) {
-          gpa = 1.33;
-        } else if (gpa.includes("D-") || gpa >= 59.5) {
-          gpa = 0.66;
-        } else if (gpa.includes("D") || gpa >= 63.5) {
-          gpa = 1.0;
-        } else if (gpa.includes("F") || (gpa <= 59.5 && gpa >= 1)) {
-          gpa = 0.0;
-        } else {
-          gpa = 0;
+        if (
+          gradeValue === 0 &&
+          (gpa.includes("F") || (gpa <= 59.5 && gpa >= 1))
+        ) {
+          gradeValue = 0.0;
+        } else if (gradeValue === 0) {
           nullGPAS++;
         }
-        total += gpa;
+        total += gradeValue;
       }
-      if ((level == "H" || level == "AP") && total != 0) {
-        var addHonors = honors * 0.33;
-        console.log(addHonors);
-        var addAP = ap * 0.66;
-        total += addHonors + addAP;
+
+      if ((level === "H" || level === "AP") && total !== 0) {
+        total += honors * 0.33 + ap * 0.66;
       }
+
       total /= gradeArray.length - nullGPAS;
       if (total > 5) total = 5;
+
       return total.toFixed(2);
     }
 
@@ -257,11 +225,25 @@ if (window.location.href.includes("home.html")) {
       "<tr><th id='averagew' class='right' colspan='12'>Sort classes by AP / Honors / Regular: " +
         "<input class='sort' type='checkbox' id='sort'> </th></tr>"
     );
-    var checkboxState = document.cookie.replace(
-      /(?:(?:^|.*;\s*)checkboxState\s*\=\s*([^;]*).*$)|^.*$/,
-      "$1"
-    );
-    $(".sort").prop("checked", checkboxState === "true");
+    // var checkboxState = document.cookie.replace(
+    //   /(?:(?:^|.*;\s*)checkboxState\s*\=\s*([^;]*).*$)|^.*$/,
+    //   "$1"
+    // );
+    // $(".sort").prop("checked", checkboxState === "true");
+
+    function getCookie(name) {
+      var value = "; " + document.cookie;
+      var parts = value.split("; " + name + "=");
+      if (parts.length == 2) return parts.pop().split(";").shift();
+    }
+
+    // On page load, set checkbox according to cookie
+    var checkboxState = getCookie("checkboxState");
+    if (checkboxState === "true") {
+      $(".sort").prop("checked", true);
+    } else {
+      $(".sort").prop("checked", false);
+    }
 
     // Call the function manually after setting checkbox based on cookie
     var classCount = 0;
@@ -339,18 +321,6 @@ if (window.location.href.includes("home.html")) {
       });
     }
 
-    function getCookie(name) {
-      var value = "; " + document.cookie;
-      var parts = value.split("; " + name + "=");
-      if (parts.length == 2) return parts.pop().split(";").shift();
-    }
-    // On page load, set checkbox according to cookie
-    var checkboxState = getCookie("checkboxState");
-    if (checkboxState === "true") {
-      $(".sort").prop("checked", true);
-    } else {
-      $(".sort").prop("checked", false);
-    }
     $(".sort").change(function () {
       document.cookie = "checkboxState=" + this.checked + "; path=/";
       const isSortChecked = this.checked;
