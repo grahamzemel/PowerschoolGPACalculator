@@ -15,6 +15,70 @@ if (window.location.href.includes("home.html")) {
     var calcGradeW = [""];
     var calcGradeU = [""];
 
+    function getCookie(name) {
+      var value = "; " + document.cookie;
+      var parts = value.split("; " + name + "=");
+      if (parts.length == 2) return parts.pop().split(";").shift();
+    }
+    // On page load, set checkbox according to cookie
+    var checkboxState = getCookie("checkboxState");
+    if (checkboxState === "true") {
+      $(".sort").prop("checked", true);
+    } else {
+      $(".sort").prop("checked", false);
+    }
+
+    // Calc Grades (particularly helpful with weighted grades)
+    function calculateGrades(type) {
+      calcGradeW = [];
+      for (var i = 1; i <= quarters; i++) {
+        if ([1, 2, 3, 5, 6, 7].includes(i)) {
+          var gpaValue = String(getGpa(i, type));
+          calcGradeW.push(gpaValue);
+          $("#gpa" + i).text(
+            ["NaN", "Infinity"].includes(gpaValue) ? "N/A" : gpaValue
+          );
+        }
+      }
+
+      calcGradeW = calcGradeW.filter(
+        (val) => !["NaN", "Infinity", "undefined", ""].includes(val)
+      );
+      var glenW = calcGradeW.length;
+
+      switch (glenW) {
+        case 6:
+          qweight = [0.2, 0.2, 0.1, 0.2, 0.2, 0.1];
+          break;
+        case 5:
+          qweight = [0.22, 0.22, 0.12, 0.22, 0.22];
+          break;
+        case 4:
+          qweight = [0.285, 0.285, 0.142, 0.285];
+          break;
+        case 3:
+          qweight = [0.4, 0.4, 0.2];
+          break;
+        case 2:
+          qweight = [0.5, 0.5];
+          break;
+        case 1:
+          qweight = [1];
+          break;
+        default:
+          console.log("Invalid value of glenW!");
+      }
+
+      var sum = calcGradeW.reduce(
+        (acc, val, idx) => acc + parseFloat(val) * qweight[idx],
+        0
+      );
+      var avg = sum > 5 ? 5 : sum;
+      avg = avg.toFixed(2);
+
+      $("#averageuw").text("Current Year Weighted GPA: " + avg);
+    }
+
     // Call the function manually after setting checkbox based on cookie
     var classCount = 0;
     rows.each(function () {
@@ -292,47 +356,53 @@ if (window.location.href.includes("home.html")) {
       }
     }
 
-    if ($(".sort").is(":checked") || true) {
-      const sortedRows = [];
-      const isSortChecked = $(".sort").is(":checked");
-
-      for (let i = 4; i <= classCount + 3; i++) {
-        const row = $("tr:eq(" + (i + 1) + ")");
-        const order = getRowOrder(row, isSortChecked);
-        sortedRows.push({ row, order });
+    if ($(".sort").is(":checked")) {
+      var sortedRows = [];
+      for (var i = 4; i <= classCount + 3; i++) {
+        var row = $("tr:eq(" + (i + 1) + ")");
+        var order = getRowOrder(row, true); // Using getRowOrder
+        sortedRows.push({ row: row, order: order });
       }
-
       sortedRows.sort((a, b) => a.order - b.order);
-
-      // Clear and append rows
-      $("tr")
-        .slice(5, classCount + 4)
-        .remove();
-      sortedRows.forEach((sortedRow, i) => {
-        $("tr:eq(" + (i + 4) + ")").after(sortedRow.row);
-      });
+      // replace all rows after row 5 with sorted rows
+      for (var i = 0; i < sortedRows.length; i++) {
+        $("tr:eq(" + (i + 5) + ")").after(sortedRows[i].row);
+      }
+    } else {
+      var sortedRows = [];
+      for (var i = 4; i <= classCount + 3; i++) {
+        var row = $("tr:eq(" + (i + 1) + ")");
+        var period = row.find("td:eq(0)").text();
+        var periodNum = period.charAt(1);
+        sortedRows.push({ row: row, order: periodNum });
+      }
+      sortedRows.sort((a, b) => a.order - b.order);
+      for (var i = 0; i < sortedRows.length; i++) {
+        $("tr:eq(" + (i + 5) + ")").after(sortedRows[i].row);
+      }
     }
 
     $(".sort").change(function () {
-      document.cookie = "checkboxState=" + this.checked + "; path=/";
-      const isSortChecked = this.checked;
-      const sortedRows = [];
-
-      for (let i = 4; i <= classCount + 3; i++) {
-        const row = $("tr:eq(" + (i + 1) + ")");
-        const order = getRowOrder(row, isSortChecked);
-        sortedRows.push({ row, order });
-      }
-
-      sortedRows.sort((a, b) => a.order - b.order);
-
-      // Clear and append rows
-      $("tr")
-        .slice(5, classCount + 4)
-        .remove();
-      sortedRows.forEach((sortedRow, i) => {
-        $("tr:eq(" + (i + 4) + ")").after(sortedRow.row);
+      var classCount = 0;
+      rows.each(function () {
+        $(this)
+          .find("td:eq('11')")
+          .each(function () {
+            classCount++;
+          });
       });
+      var isSortChecked = this.checked;
+      document.cookie = "checkboxState=" + isSortChecked + "; path=/";
+      var sortedRows = [];
+      for (var i = 4; i <= classCount + 3; i++) {
+        var row = $("tr:eq(" + (i + 1) + ")");
+        var order = getRowOrder(row, isSortChecked); // Using getRowOrder
+        sortedRows.push({ row: row, order: order });
+      }
+      sortedRows.sort((a, b) => a.order - b.order);
+      for (var i = 0; i < sortedRows.length; i++) {
+        $("tr:eq(" + (i + 5) + ")").after(sortedRows[i].row);
+      }
     });
 
     rows.each(function (c) {
@@ -352,56 +422,6 @@ if (window.location.href.includes("home.html")) {
 
     // HONORS WEIGHTING
     $(".weighHonors").change(function () {
-      function calculateGrades(type) {
-        calcGradeW = [];
-        for (var i = 1; i <= quarters; i++) {
-          if ([1, 2, 3, 5, 6, 7].includes(i)) {
-            var gpaValue = String(getGpa(i, type));
-            calcGradeW.push(gpaValue);
-            $("#gpa" + i).text(
-              ["NaN", "Infinity"].includes(gpaValue) ? "N/A" : gpaValue
-            );
-          }
-        }
-
-        calcGradeW = calcGradeW.filter(
-          (val) => !["NaN", "Infinity", "undefined", ""].includes(val)
-        );
-        var glenW = calcGradeW.length;
-
-        switch (glenW) {
-          case 6:
-            qweight = [0.2, 0.2, 0.1, 0.2, 0.2, 0.1];
-            break;
-          case 5:
-            qweight = [0.22, 0.22, 0.12, 0.22, 0.22];
-            break;
-          case 4:
-            qweight = [0.285, 0.285, 0.142, 0.285];
-            break;
-          case 3:
-            qweight = [0.4, 0.4, 0.2];
-            break;
-          case 2:
-            qweight = [0.5, 0.5];
-            break;
-          case 1:
-            qweight = [1];
-            break;
-          default:
-            console.log("Invalid value of glenW!");
-        }
-
-        var sum = calcGradeW.reduce(
-          (acc, val, idx) => acc + parseFloat(val) * qweight[idx],
-          0
-        );
-        var avg = sum > 5 ? 5 : sum;
-        avg = avg.toFixed(2);
-
-        $("#averageuw").text("Weighted GPA: " + avg);
-      }
-
       var idNum = $(this).attr("id").slice(-1);
       if ($(this).is(":checked")) {
         $("#A" + idNum).attr("disabled", true);
@@ -416,56 +436,6 @@ if (window.location.href.includes("home.html")) {
 
     // ADVANCED PLACEMENT WEIGHTING
     $(".weighAP").change(function () {
-      function calculateGrades(type) {
-        calcGradeW = [];
-        for (var i = 1; i <= quarters; i++) {
-          if ([1, 2, 3, 5, 6, 7].includes(i)) {
-            var gpaValue = String(getGpa(i, type));
-            calcGradeW.push(gpaValue);
-            $("#gpa" + i).text(
-              ["NaN", "Infinity"].includes(gpaValue) ? "N/A" : gpaValue
-            );
-          }
-        }
-
-        calcGradeW = calcGradeW.filter(
-          (val) => !["NaN", "Infinity", "undefined", ""].includes(val)
-        );
-        var glenW = calcGradeW.length;
-
-        switch (glenW) {
-          case 6:
-            qweight = [0.2, 0.2, 0.1, 0.2, 0.2, 0.1];
-            break;
-          case 5:
-            qweight = [0.22, 0.22, 0.12, 0.22, 0.22];
-            break;
-          case 4:
-            qweight = [0.285, 0.285, 0.142, 0.285];
-            break;
-          case 3:
-            qweight = [0.4, 0.4, 0.2];
-            break;
-          case 2:
-            qweight = [0.5, 0.5];
-            break;
-          case 1:
-            qweight = [1];
-            break;
-          default:
-            console.log("Invalid value of glenW!");
-        }
-
-        var sum = calcGradeW.reduce(
-          (acc, val, idx) => acc + parseFloat(val) * qweight[idx],
-          0
-        );
-        var avg = sum > 5 ? 5 : sum;
-        avg = avg.toFixed(2);
-
-        $("#averageuw").text("Weighted GPA: " + avg);
-      }
-
       var idNum = $(this).attr("id").slice(-1);
       if ($(this).is(":checked")) {
         $("#H" + idNum).attr("disabled", true);
