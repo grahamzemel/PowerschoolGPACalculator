@@ -211,16 +211,28 @@ if (window.location.href.includes("home.html")) {
     let avg = sum > 5 ? 5 : sum;
     avg = avg.toFixed(2);
 
+    $("th:contains('Absences')").remove();
+    $("th:contains('Tardies')").remove();
+    var content = $('#quickLookup > table:nth-child(4) > tbody > tr:nth-child(1) > td').text();
+    var numbers = content.match(/\d+(\.\d+)?/g);
+    // numbers[0] is 1 (from 'F1')
+    var firstNumber = parseFloat(numbers[1]);
+    var secondNumber = parseFloat(numbers[2]);
+    
+    $("th:contains('F1')").after('<th rowspan="2" colspan="2" style="font-size: .8rem; text-align:center;">Official GPAs <div style="display:block; font-size:0.6rem; white-space:nowrap;">(updated quarterly)</div></th>');
     $("tr:eq('1')").after(
-      `<tr><th id='averageuw' class='right' colspan='12'>Weighted GPA: ${avg} </th>${theString}</tr>`
+      `<tr><th id='averageuw' class='right' colspan='12'>Current Year Weighted GPA: ${avg} </th>${theString}<th id='weightedOfficial' class='left' colspan='8'>${secondNumber}</th></tr>`
     );
     $("tr:eq('2')").after(
-      `<tr><th id='averagew' class='right' colspan='12'>Unweighted GPA: ${avg} </th>${theString}</tr>`
+      `<tr><th id='averagew' class='right' colspan='12'>Current Year Unweighted GPA: ${avg} </th>${theString}<th id='unweightedOfficial' class='left' colspan='8'>${firstNumber}</th></tr>`
     );
     $("tr:eq('3')").after(
-      "<tr><th id='averagew' class='right' colspan='12'>Sort classes by AP / Honors / Regular: <input class='sort' type='checkbox' id='sort'> </th></tr>"
+      "<tr><th id='checkboxOption' class='right' colspan='12'>Sort classes by AP / Honors / Regular: <input class='sort' type='checkbox' id='sort'> </th> "
     );
 
+    // FIX LATER
+    // $("#checkboxOption").after("");
+    // </tr><th>Absences</th><th>Tardies</th>
     function getCookie(name) {
       var value = "; " + document.cookie;
       var parts = value.split("; " + name + "=");
