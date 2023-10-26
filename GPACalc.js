@@ -28,67 +28,6 @@ if (window.location.href.includes("home.html")) {
       $(".sort").prop("checked", false);
     }
 
-    // Calc Grades (particularly helpful with weighted grades)
-    function calculateGrades(type) {
-      calcGradeW = [];
-      for (var i = 1; i <= quarters; i++) {
-        if ([1, 2, 3, 5, 6, 7].includes(i)) {
-          var gpaValue = String(getGpa(i, type));
-          calcGradeW.push(gpaValue);
-          $("#gpa" + i).text(
-            ["NaN", "Infinity"].includes(gpaValue) ? "N/A" : gpaValue
-          );
-        }
-      }
-
-      calcGradeW = calcGradeW.filter(
-        (val) => !["NaN", "Infinity", "undefined", ""].includes(val)
-      );
-      var glenW = calcGradeW.length;
-
-      switch (glenW) {
-        case 6:
-          qweight = [0.2, 0.2, 0.1, 0.2, 0.2, 0.1];
-          break;
-        case 5:
-          qweight = [0.22, 0.22, 0.12, 0.22, 0.22];
-          break;
-        case 4:
-          qweight = [0.285, 0.285, 0.142, 0.285];
-          break;
-        case 3:
-          qweight = [0.4, 0.4, 0.2];
-          break;
-        case 2:
-          qweight = [0.5, 0.5];
-          break;
-        case 1:
-          qweight = [1];
-          break;
-        default:
-          console.log("Invalid value of glenW!");
-      }
-
-      var sum = calcGradeW.reduce(
-        (acc, val, idx) => acc + parseFloat(val) * qweight[idx],
-        0
-      );
-      var avg = sum > 5 ? 5 : sum;
-      avg = avg.toFixed(2);
-
-      $("#averageuw").text("Current Year Weighted GPA: " + avg);
-    }
-
-    // Call the function manually after setting checkbox based on cookie
-    var classCount = 0;
-    rows.each(function () {
-      $(this)
-        .find("td:eq('11')")
-        .each(function () {
-          classCount++;
-        });
-    });
-
     var periodRow = $("table.linkDescList.grid")
       .find("tbody")
       .find("tr:nth-child(1)")
@@ -186,8 +125,7 @@ if (window.location.href.includes("home.html")) {
 
       if (gradeArray[gradeArray.length - 1] < 0) return 0;
 
-      var total = 0,
-        nullGPAS = 0;
+      var total = 0,nullGPAS = 0;
 
       gradeArray = gradeArray.filter(
         (g) => g !== "[ i ]" && g !== " Not available"
@@ -277,13 +215,17 @@ if (window.location.href.includes("home.html")) {
 
     $("th:contains('Absences')").remove();
     $("th:contains('Tardies')").remove();
-    var content = $('#quickLookup > table:nth-child(4) > tbody > tr:nth-child(1) > td').text();
+    var content = $(
+      "#quickLookup > table:nth-child(4) > tbody > tr:nth-child(1) > td"
+    ).text();
     var numbers = content.match(/\d+(\.\d+)?/g);
     // numbers[0] is 1 (from 'F1')
     var firstNumber = parseFloat(numbers[1]);
     var secondNumber = parseFloat(numbers[2]);
-    
-    $("th:contains('F1')").after('<th rowspan="2" colspan="2" style="font-size: .8rem; text-align:center;">Official GPAs <div style="display:block; font-size:0.6rem; white-space:nowrap;">(updated quarterly)</div></th>');
+
+    $("th:contains('F1')").after(
+      '<th rowspan="2" colspan="2" style="font-size: .8rem; text-align:center;">Official GPAs <div style="display:block; font-size:0.6rem; white-space:nowrap;">(updated quarterly)</div></th>'
+    );
     $("tr:eq('1')").after(
       `<tr><th id='averageuw' class='right' colspan='12'>Current Year Weighted GPA: ${avg} </th>${theString}<th id='weightedOfficial' class='left' colspan='8'>${secondNumber}</th></tr>`
     );
@@ -310,6 +252,15 @@ if (window.location.href.includes("home.html")) {
     } else {
       $(".sort").prop("checked", false);
     }
+
+    var classCount = 0;
+    rows.each(function () {
+      $(this)
+        .find("td:eq('11')")
+        .each(function () {
+          classCount++;
+        });
+    });
 
     // SORT CLASSES BY AP / HONORS / REGULAR
     // Checks if the checkbox is checked on page load
@@ -418,32 +369,244 @@ if (window.location.href.includes("home.html")) {
         });
     });
 
-    // HONORS WEIGHTING
     $(".weighHonors").change(function () {
+      calcGradeW = [""];
       var idNum = $(this).attr("id").slice(-1);
       if ($(this).is(":checked")) {
         $("#A" + idNum).attr("disabled", true);
         honors += 1;
-        calculateGrades("H");
+        for (var i = 1; i <= quarters; i++) {
+          if (i == 1 || i == 2 || i == 3 || i == 5 || i == 6 || i == 7) {
+            // custom
+            calcGradeW.push(String(getGpa(i, "H")));
+          }
+          if (getGpa(i, "H") != "NaN" && getGpa(i, "H") != "Infinity") {
+            $("#gpa" + i).text(getGpa(i, "H"));
+          } else {
+            $("#gpa" + i).text("N/A");
+          }
+        }
+        for (var i = 0; i < calcGradeW.length; i++) {
+          if (
+            calcGradeW[i] == "NaN" ||
+            calcGradeW[i] == "Infinity" ||
+            calcGradeW[i] == "undefined" ||
+            calcGradeW[i] == ""
+          ) {
+            calcGradeW.splice(i, 1);
+            i--;
+          }
+        }
+        var sum = 0;
+        var glenW = calcGradeW.length;
+
+        switch (glenW) {
+          case 6:
+            qweight = [0.2, 0.2, 0.1, 0.2, 0.2, 0.1];
+            break;
+          case 5:
+            qweight = [0.22, 0.22, 0.12, 0.22, 0.22];
+            break;
+          case 4:
+            qweight = [0.285, 0.285, 0.142, 0.285];
+            break;
+          case 3:
+            qweight = [0.4, 0.4, 0.2];
+            break;
+          case 2:
+            qweight = [0.5, 0.5];
+            break;
+          case 1:
+            qweight = [1];
+            break;
+          default:
+            console.log("Invalid value of glenW!");
+        }
+        for (var i = 0; i < glenW; i++) {
+          sum += parseFloat(calcGradeW[i] * qweight[i]);
+        }
+        var avg = sum;
+        if (avg > 5) avg = 5;
+        avg = avg.toFixed(2);
+        $("#averageuw").text("Current Year Weighted GPA: " + avg);
       } else {
         $("#A" + idNum).attr("disabled", false);
         honors -= 1;
-        calculateGrades("H");
+        for (var i = 1; i <= quarters; i++) {
+          if (i == 1 || i == 2 || i == 3 || i == 5 || i == 6 || i == 7) {
+            // custom
+            calcGradeW.push(String(getGpa(i, "H")));
+          }
+          if (getGpa(i, "H") != "NaN" && getGpa(i, "H") != "Infinity") {
+            $("#gpa" + i).text(getGpa(i, "H"));
+          } else {
+            $("#gpa" + i).text("N/A");
+          }
+        }
+        for (var i = 0; i < calcGradeW.length; i++) {
+          if (
+            calcGradeW[i] == "NaN" ||
+            calcGradeW[i] == "Infinity" ||
+            calcGradeW[i] == "undefined" ||
+            calcGradeW[i] == ""
+          ) {
+            calcGradeW.splice(i, 1);
+            i--;
+          }
+        }
+        var sum = 0;
+        var glenW = calcGradeW.length;
+        switch (glenW) {
+          case 6:
+            qweight = [0.2, 0.2, 0.1, 0.2, 0.2, 0.1];
+            break;
+          case 5:
+            qweight = [0.22, 0.22, 0.12, 0.22, 0.22];
+            break;
+          case 4:
+            qweight = [0.285, 0.285, 0.142, 0.285];
+            break;
+          case 3:
+            qweight = [0.4, 0.4, 0.2];
+            break;
+          case 2:
+            qweight = [0.5, 0.5];
+            break;
+          case 1:
+            qweight = [1];
+            break;
+          default:
+            console.log("Invalid value of glenW!");
+        }
+        for (var i = 0; i < glenW; i++) {
+          sum += parseFloat(calcGradeW[i] * qweight[i]);
+        }
+        var avg = sum;
+        if (avg > 5) avg = 5;
+        avg = avg.toFixed(2);
+        $("#averageuw").text("Current Year Weighted GPA: " + avg);
       }
     });
 
-    // ADVANCED PLACEMENT WEIGHTING
     $(".weighAP").change(function () {
+      calcGradeW = [""];
       var idNum = $(this).attr("id").slice(-1);
       if ($(this).is(":checked")) {
         $("#H" + idNum).attr("disabled", true);
         ap += 1;
-        calculateGrades("AP");
+        for (var i = 1; i <= quarters; i++) {
+          if (i == 1 || i == 2 || i == 3 || i == 5 || i == 6 || i == 7) {
+            // custom
+            calcGradeW.push(String(getGpa(i, "AP")));
+          }
+          if (getGpa(i, "AP") != "NaN" && getGpa(i, "AP") != "Infinity") {
+            $("#gpa" + i).text(getGpa(i, "AP"));
+          } else {
+            $("#gpa" + i).text("N/A");
+          }
+        }
+        for (var i = 0; i < calcGradeW.length; i++) {
+          if (
+            calcGradeW[i] == "NaN" ||
+            calcGradeW[i] == "Infinity" ||
+            calcGradeW[i] == "undefined" ||
+            calcGradeW[i] == ""
+          ) {
+            calcGradeW.splice(i, 1);
+            i--;
+          }
+        }
+        var sum = 0;
+        var glenW = calcGradeW.length;
+
+        switch (glenW) {
+          case 6:
+            qweight = [0.2, 0.2, 0.1, 0.2, 0.2, 0.1];
+            break;
+          case 5:
+            qweight = [0.22, 0.22, 0.12, 0.22, 0.22];
+            break;
+          case 4:
+            qweight = [0.285, 0.285, 0.142, 0.285];
+            break;
+          case 3:
+            qweight = [0.4, 0.4, 0.2];
+            break;
+          case 2:
+            qweight = [0.5, 0.5];
+            break;
+          case 1:
+            qweight = [1];
+            break;
+          default:
+            console.log("Invalid value of glenW!");
+        }
+        for (var i = 0; i < glenW; i++) {
+          sum += parseFloat(calcGradeW[i] * qweight[i]);
+        }
+        var avg = sum;
+        if (avg > 5) avg = 5;
+        avg = avg.toFixed(2);
+        $("#averageuw").text("Current Year Weighted GPA: " + avg);
       } else {
         $("#H" + idNum).attr("disabled", false);
         ap -= 1;
-        calculateGrades("AP");
+        for (var i = 1; i <= quarters; i++) {
+          if (i == 1 || i == 2 || i == 3 || i == 5 || i == 6 || i == 7) {
+            // custom
+            calcGradeW.push(String(getGpa(i, "AP")));
+          }
+          if (getGpa(i, "AP") != "NaN" && getGpa(i, "AP") != "Infinity") {
+            $("#gpa" + i).text(getGpa(i, "AP"));
+          } else {
+            $("#gpa" + i).text("N/A");
+          }
+        }
+        for (var i = 0; i < calcGradeW.length; i++) {
+          if (
+            calcGradeW[i] == "NaN" ||
+            calcGradeW[i] == "Infinity" ||
+            calcGradeW[i] == "undefined" ||
+            calcGradeW[i] == ""
+          ) {
+            calcGradeW.splice(i, 1);
+            i--;
+          }
+        }
+        var sum = 0;
+        var glenW = calcGradeW.length;
+
+        switch (glenW) {
+          case 6:
+            qweight = [0.2, 0.2, 0.1, 0.2, 0.2, 0.1];
+            break;
+          case 5:
+            qweight = [0.22, 0.22, 0.12, 0.22, 0.22];
+            break;
+          case 4:
+            qweight = [0.285, 0.285, 0.142, 0.285];
+            break;
+          case 3:
+            qweight = [0.4, 0.4, 0.2];
+            break;
+          case 2:
+            qweight = [0.5, 0.5];
+            break;
+          case 1:
+            qweight = [1];
+            break;
+          default:
+            console.log("Invalid value of glenW!");
+        }
+        for (var i = 0; i < glenW; i++) {
+          sum += parseFloat(calcGradeW[i] * qweight[i]);
+        }
+        var avg = sum;
+        if (avg > 5) avg = 5;
+        avg = avg.toFixed(2);
+        $("#averageuw").text("Current Year Weighted GPA: " + avg);
       }
+      // }
     });
   });
 }
