@@ -4,9 +4,9 @@
   "manifest_version": 3,
   "name": "PowerSchool GPA Calculator",
   "short_name": "GPA Calculator",
-  "version": "1.1.4",
+  "version": "1.2.0",
   "author": "Graham Zemel",
-  "description": "Automatic GPA Calculator for PowerSchool, still in development as of 09/06/23!",
+  "description": "Automatic GPA Calculator for PowerSchool, still in development as of 10/25/23!",
   "icons": {
     "128": "image.png"
   },
