@@ -79,16 +79,16 @@ if (window.location.href.includes("home.html")) {
       const gradeMapping = [
         [96.5, "A+", 4.33],
         [92.5, "A", 4.0],
-        [89.5, "A-", 3.66],
+        [89.5, "A-", 3.67],
         [86.5, "B+", 3.33],
         [82.5, "B", 3.0],
-        [79.5, "B-", 2.66],
+        [79.5, "B-", 2.67],
         [76.5, "C+", 2.33],
         [73.5, "C", 2.0],
-        [69.5, "C-", 1.66],
+        [69.5, "C-", 1.67],
         [66.5, "D+", 1.33],
         [63.5, "D", 1.0],
-        [59.5, "D-", 0.66],
+        [59.5, "D-", 0.67],
       ];
 
       switch (gradeArray) {
@@ -125,40 +125,29 @@ if (window.location.href.includes("home.html")) {
 
       if (gradeArray[gradeArray.length - 1] < 0) return 0;
 
-      var total = 0,nullGPAS = 0;
-
-      gradeArray = gradeArray.filter(
-        (g) => g !== "[ i ]" && g !== " Not available"
-      );
+      var total = 0, validGPAs = 0;
 
       for (var gpa of gradeArray) {
-        if (gpa === undefined) break;
-        var gradeValue = 0;
-        for (const [thresh, gradeStr, value] of gradeMapping) {
-          if (gpa >= thresh || gpa.includes(gradeStr)) {
-            gradeValue = value;
-            break;
+        if(!gpa.includes("Not available") && gpa !== undefined && !gpa.includes("[ i ]") && gpa !== "NaN"){
+          var gradeValue = 0;
+          for (const [thresh, gradeStr, value] of gradeMapping) {
+            if (gpa >= thresh || gpa.includes(gradeStr)) {
+              gradeValue = value;
+              break;
+            }
           }
+          total += gradeValue;
+          validGPAs++;
         }
-        if (
-          gradeValue === 0 &&
-          (gpa.includes("F") || (gpa <= 59.5 && gpa >= 1))
-        ) {
-          gradeValue = 0.0;
-        } else if (gradeValue === 0) {
-          nullGPAS++;
-        }
-        total += gradeValue;
       }
-
-      if ((level === "H" || level === "AP") && total !== 0) {
-        total += honors * 0.33 + ap * 0.66;
+      if(total != 0){
+        total -= 0.33 // error offset, not sure why. Accounts for diff in transcript vs. official GPA
       }
-
-      total /= gradeArray.length - nullGPAS;
-      if (total > 5) total = 5;
-
-      return total.toFixed(2);
+      
+      // not dividing GPA out of 100 by 25 or 24, somewhere between. 24.8 is the closest. 
+      weightValue = (level === "H" || level === "AP") ? (honors * 0.33 + ap * 0.66) : 0;
+      total += weightValue;
+      return (total / validGPAs).toFixed(2);
     }
 
     let theString = "";
@@ -182,7 +171,6 @@ if (window.location.href.includes("home.html")) {
     );
 
     const glenU = calcGradeU.length;
-
     switch (glenU) {
       case 6:
         qweight = [0.2, 0.2, 0.1, 0.2, 0.2, 0.1]; // custom
@@ -307,7 +295,7 @@ if (window.location.href.includes("home.html")) {
 
     if ($(".sort").is(":checked")) {
       var sortedRows = [];
-      for (var i = 4; i <= classCount + 3; i++) {
+      for (var i = 3; i <= classCount + 3; i++) {
         var row = $("tr:eq(" + (i + 1) + ")");
         var order = getRowOrder(row, true); // Using getRowOrder
         sortedRows.push({ row: row, order: order });
@@ -319,7 +307,7 @@ if (window.location.href.includes("home.html")) {
       }
     } else {
       var sortedRows = [];
-      for (var i = 4; i <= classCount + 3; i++) {
+      for (var i = 3; i <= classCount + 3; i++) {
         var row = $("tr:eq(" + (i + 1) + ")");
         var period = row.find("td:eq(0)").text();
         var periodNum = period.charAt(1);
@@ -343,7 +331,7 @@ if (window.location.href.includes("home.html")) {
       var isSortChecked = this.checked;
       document.cookie = "checkboxState=" + isSortChecked + "; path=/";
       var sortedRows = [];
-      for (var i = 4; i <= classCount + 3; i++) {
+      for (var i = 3; i <= classCount + 3; i++) {
         var row = $("tr:eq(" + (i + 1) + ")");
         var order = getRowOrder(row, isSortChecked); // Using getRowOrder
         sortedRows.push({ row: row, order: order });

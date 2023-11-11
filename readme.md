@@ -1,7 +1,7 @@
 # PowerSchool GPA Calculator
 "*Math math math math math math math math math math math math math...*" - John Wetzel, 2023
 
-Created sometime in 2022, in development as of 11/1/2023.
+Created sometime in 2022, in development as of 11/11/2023.
 
 ## Functionality
 This is the source code of a GPA calculator extension for PowerSchool. It is designed to be used by students to automatically calculate their Weighted and Unweighted GPA. 
