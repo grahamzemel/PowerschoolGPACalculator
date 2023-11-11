@@ -226,6 +226,14 @@ if (window.location.href.includes("home.html")) {
       "<th id='checkboxOption' class='right' colspan='12'>Sort classes by AP / Honors / Regular: <input class='sort' type='checkbox' id='sort'> </th><th colspan='9'></th> <th>Absences</th><th>Tardies</th>"
     );
 
+      // replace text from element with id attByClass with "If you like using PowerSchool GPA Calculator, please rate us on our Chrome Web Store page! and link the page where it says "Chrome Web Store page"
+    var attByClass = document.createElement("a");
+    attByClass.innerHTML = "Chrome Web Store page";
+    attByClass.href = "https://chrome.google.com/webstore/detail/powerschool-gpa-calculato/dgfnbmfhjioifionnlcklnpfkkjjglbj?hl=en/review";
+    attByClass.target = "_blank";
+      document.getElementById("attByClass").innerHTML = "If you like using PowerSchool GPA Calculator, please rate us on our ";
+      document.getElementById("attByClass").appendChild(attByClass);
+      document.getElementById("attByClass").innerHTML += "!";
 
     function getCookie(name) {
       var value = "; " + document.cookie;
